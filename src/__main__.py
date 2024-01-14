@@ -1,5 +1,6 @@
 import asyncio
 import aiohttp
+import argparse
 
 from loguru import logger
 from src import cloudflare, convert ,utils
@@ -138,12 +139,19 @@ class CloudflareManager:
         logger.info("Deletion completed")
 
 async def main():
+    parser = argparse.ArgumentParser(description="Cloudflare Manager Script")
+    parser.add_argument("action", choices=["run", "leave"], help="Choose action: run or leave")
+    args = parser.parse_args()
     adlist_urls = utils.read_urls_from_file("./lists/adlist.ini")
     whitelist_urls = utils.read_urls_from_file("./lists/whitelist.ini")
     adlist_name = "DNS-Filters"
     cloudflaremanager = CloudflareManager(adlist_name, adlist_urls, whitelist_urls)
-    # await cloudflaremanager.leave()  # Leave script
-    await cloudflaremanager.run()
+    if args.action == "run":
+        await cloudflaremanager.run()
+    elif args.action == "leave":
+        await cloudflaremanager.leave()
+    else:
+        logger.error("Invalid action. Please choose either 'run' or 'leave'.")
 
 if __name__ == "__main__":
     asyncio.run(main())
